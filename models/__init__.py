@@ -4,11 +4,11 @@ import copy
 import numpy as np
 import torch
 
-from FC_models import *
-from Conv_models import *
-from LSTM_models import *
+from models.FC_models import *
+from models.Conv_models import *
+from models.LSTM_models import *
 
-def setup(args):
+def  setup(args):
     if args.model == 'fc':
         model = CoreFC(args.coded_size, args.patch_size)
         args.residual = False

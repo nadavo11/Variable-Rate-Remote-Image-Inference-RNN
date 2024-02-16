@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import *
 
-from binary_layers import BinaryLayer
+from models.binary_layers import BinaryLayer
 
 
 class LSTMEncoder(nn.Module):

@@ -36,7 +36,7 @@ def main(args):
     model = models.setup(args)
 
     # Load the SAVED model
-    path_to_model = os.path.join(args.model_path, args.model+'-p%d_b%d-%d_%d.pkl' %
+    path_to_model = os.path.join(args.model_path, args.model+'_res-p%d_b%d-%d_%d.pkl' %
                                  (args.patch_size, args.coded_size, args.load_epoch, args.load_iter))
     model.load_state_dict(torch.load(path_to_model))
 
@@ -110,7 +110,7 @@ if __name__ == '__main__':
                         help='Set True if the model is residual, otherwise False')
     parser.add_argument('--batch_size', type=int, default=4,
                         help='mini-batch size')
-    parser.add_argument('--coded_size', type=int, default=4,
+    parser.add_argument('--coded_size', type=int, default=16,
                         help='number of bits representing the encoded patch')
     parser.add_argument('--patch_size', type=int, default=8,
                         help='size for the encoded subdivision of the input image')
@@ -136,9 +136,9 @@ if __name__ == '__main__':
                         help='step size for saving the trained models')
     parser.add_argument('--output_path', type=str, default='./test_imgs/')
 
-    parser.add_argument('--load_iter', type=int, default=12500,
+    parser.add_argument('--load_iter', type=int, default=100,
                         help='iteration which the model to be loaded was saved')
-    parser.add_argument('--load_epoch', type=int, default=3,
+    parser.add_argument('--load_epoch', type=int, default=1,
                         help='epoch in which the model to be loaded was saved')
 
 
