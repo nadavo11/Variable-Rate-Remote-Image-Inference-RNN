@@ -19,7 +19,7 @@ class EncoderFC(nn.Module):
         self.fc2 = nn.Linear(512, 512)
         self.fc3 = nn.Linear(512, 512)
         self.w_bin = nn.Linear(512, self.coded_size)
-        self.binary = BinaryLayer()
+        self.binary = BinaryLayer() # not implemented prorperly
 
     def forward(self, x):
         """
@@ -32,7 +32,7 @@ class EncoderFC(nn.Module):
         x = F.tanh(self.fc2(x))
         x = F.tanh(self.fc3(x))
         x = F.tanh(self.w_bin(x))
-        x = self.binary(x)
+        x = self.binary(x)  # raises an error -------------------
         return x
 
 

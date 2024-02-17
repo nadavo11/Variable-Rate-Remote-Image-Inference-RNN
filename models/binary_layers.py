@@ -13,8 +13,15 @@ class BinaryLayer(Function):
 
 
 class BinaryLayer2(nn.Module):
+
+
+    """ --------
+    this guy  didn't implement a working binary layer, nor did he specify how
+     it should work, so I have to do it myself.
+      -------"""
+
     """Binary layer as defined in the paper: STILL NOT WORKING!!!1 :("""
-    #TODO: Make this work
+    # TODO: Make this work
     def forward(self, x):
         probs_tensor = torch.rand(x.size())
         errors = Variable(torch.FloatTensor(x.size()))
