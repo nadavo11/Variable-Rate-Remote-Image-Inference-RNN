@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import *
 
-from models.binary_layers import BinaryLayer
+from models.binary_layers import BinaryLayer, BinaryLayer2
 
 
 class EncoderFC(nn.Module):
@@ -19,7 +19,7 @@ class EncoderFC(nn.Module):
         self.fc2 = nn.Linear(512, 512)
         self.fc3 = nn.Linear(512, 512)
         self.w_bin = nn.Linear(512, self.coded_size)
-        self.binary = BinaryLayer() # not implemented prorperly
+        self.binary = BinaryLayer2() # not implemented prorperly
 
     def forward(self, x):
         """

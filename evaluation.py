@@ -36,13 +36,16 @@ def main(args):
     model = models.setup(args)
 
     # Load the SAVED model
-    path_to_model = os.path.join(args.model_path, args.model+'_res-p%d_b%d-%d_%d.pkl' %
-                                 (args.patch_size, args.coded_size, args.load_epoch, args.load_iter))
+    # path_to_model = os.path.join(args.model_path, args.model+'_res-p%d_b%d-%d_%d.pkl' %
+    #                              (args.patch_size, args.coded_size, args.load_epoch, args.load_iter))
+
+    path_to_model = args.model_path
     model.load_state_dict(torch.load(path_to_model))
 
     print('Starting eval:::::::::::::::::')
     for i in range(args.num_samples//args.batch_size):
-        imgs, _ = dataiter.next()
+        # fixed from dataiter.next() ❌❌
+        imgs, _ = next(dataiter)
         imsave(torchvision.utils.make_grid(imgs), 'prova_'+str(i))
 
         # Patch the image:
@@ -110,7 +113,7 @@ if __name__ == '__main__':
                         help='Set True if the model is residual, otherwise False')
     parser.add_argument('--batch_size', type=int, default=4,
                         help='mini-batch size')
-    parser.add_argument('--coded_size', type=int, default=16,
+    parser.add_argument('--coded_size', type=int, default=4,
                         help='number of bits representing the encoded patch')
     parser.add_argument('--patch_size', type=int, default=8,
                         help='size for the encoded subdivision of the input image')
@@ -128,7 +131,7 @@ if __name__ == '__main__':
     # ==================================================================================================================
     # SAVING & PRINTING
     # ------------------------------------------------------------------------------------------------------------------
-    parser.add_argument('--model_path', type=str, default='./saved_models/',
+    parser.add_argument('--model_path', type=str, default='./saved_models/main_model.pkl',
                         help='path were the models should be saved')
     parser.add_argument('--log_step', type=int, default=10,
                         help='step size for printing the log info')

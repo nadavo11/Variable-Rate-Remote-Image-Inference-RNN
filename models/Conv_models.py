@@ -3,7 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import *
 
-from models.binary_layers import BinaryLayer
+from models.binary_layers import BinaryLayer, BinaryLayer2
+
 
 class ConvolutionalEncoder(nn.Module):
 
@@ -16,7 +17,7 @@ class ConvolutionalEncoder(nn.Module):
         self.conv_3 = nn.Conv2d(256, 512, 3, stride=2)
         self.fc_1 = nn.Linear(512*6*6, coded_size*8)
         self.fc_2 = nn.Linear(coded_size*8, coded_size)
-        self.binary = BinaryLayer()
+        self.binary = BinaryLayer2()
 
     def forward(self, x):
         x = F.tanh(self.conv_1(x))  # 32x32@3 --> 15x15@64

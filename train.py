@@ -10,6 +10,7 @@ import math
 import time
 import os
 import numpy as np
+from torch.utils.data import Subset, DataLoader
 
 import models
 
@@ -31,6 +32,16 @@ def main(args):
     # Load the CIFAR LOADER
     trainset = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, transform=transform)
     train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    # Generate random indices to select a subset
+    indices = torch.randperm(len(trainset)).tolist()[:100]
+    # Create a smaller dataset from the full dataset
+    trainset_small = Subset(trainset, indices)
+
+    """________________________________________
+     work on a smaller dataset to test the model
+    """
+    # Create a DataLoader for the smaller dataset
+    train_loader_small = DataLoader(trainset_small, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
     # Load the model:
     model = models.setup(args)
@@ -44,7 +55,8 @@ def main(args):
     #   TRAIN----------------------
     # ::::::::::::::::::::::::::::::::
 
-    num_steps = len(train_loader)
+    # change for trainloader size:
+    num_steps = len(train_loader_small)
     start = time.time()
     total_losses = []
     # Divide the input 32x32 images into num_patches patch_sizexpatch_size patchs
@@ -54,7 +66,7 @@ def main(args):
 
         running_loss = 0.0
         current_losses = []
-        for i, data in enumerate(train_loader, 0):
+        for i, data in enumerate(train_loader_small, 0):
 
             # Get the images
             imgs = data[0]
@@ -74,7 +86,7 @@ def main(args):
                     loss = criterion(reconstructed_patches, v_patch)
                     loss.backward()
                     optimizer.step()
-                    running_loss += loss.data[0]
+                    running_loss += loss.item()
 
             elif args.model in residual_models:
                 for patch in patches:
