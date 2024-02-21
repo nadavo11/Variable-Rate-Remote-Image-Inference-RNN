@@ -19,7 +19,8 @@ pip install -r requirements.txt
  use the cli to train and evaluate models
 
 ## train 💪💪
-python .\train.py
+first thing we might wanna do is train a new model out of the box, or an existing one by calling ``python .\train.py ``
+unfortunately, before running a mere epoch, you will have to config one shitload of arguments. now that sounds like a weekend!
 
 ### example
 ```bash
@@ -95,3 +96,88 @@ Detailed explanation of each parameter available in `train.py`:
   Compression for low-resolution thumbnails images using RNN.
 
 Original paper: Toderici et al., Google, ICLR 2016 
+
+# Evaluate 📈📉📊
+## Options
+
+Detailed documentation of the command-line options available in the training script:
+
+- `--model`
+  - type: `str`
+  - default: `fc`
+  - Description: Specify the model type. Options include `fc` for fully connected, `conv` for convolutional, and `lstm` for long short-term memory networks.
+
+- `--residual`
+  - type: `bool`
+  - default: `False`
+  - Description: Set to `True` to enable residual connections in the model architecture.
+
+- `--batch_size`
+  - type: `int`
+  - default: `4`
+  - Description: The mini-batch size used during training.
+
+- `--coded_size`
+  - type: `int`
+  - default: `4`
+  - Description: The number of bits representing the encoded patch.
+
+- `--patch_size`
+  - type: `int`
+  - default: `8`
+  - Description: The size of the encoded subdivision of the input image.
+
+- `--num_passes`
+  - type: `int`
+  - default: `16`
+  - Description: The number of passes for recursive architectures.
+
+- `--num_epochs`
+  - type: `int`
+  - default: `3`
+  - Description: The total number of iterations the system will run through the entire dataset.
+
+- `--learning_rate`
+  - type: `float`
+  - default: `0.001`
+  - Description: The learning rate for the optimizer.
+
+- `--momentum`
+  - type: `float`
+  - default: `0.9`
+  - Description: The momentum factor for the optimizer.
+
+- `--model_path`
+  - type: `str`
+  - default: `./saved_models/main_model.pkl`
+  - Description: The directory path where trained models are saved. Ensure this path exists or is writable.
+
+- `--log_step`
+  - type: `int`
+  - default: `10`
+  - Description: The step size for printing the log information during training.
+
+- `--save_step`
+  - type: `int`
+  - default: `5000`
+  - Description: The step size for saving the trained models to disk.
+
+- `--output_path`
+  - type: `str`
+  - default: `./test_imgs/`
+  - Description: The path where output images will be saved.
+
+- `--load_iter`
+  - type: `int`
+  - default: `100`
+  - Description: The iteration from which the model should be loaded.
+
+- `--load_epoch`
+  - type: `int`
+  - default: `1`
+  - Description: The epoch from which the model should be loaded.
+
+- `--num_samples`
+  - type: `int`
+  - default: `20`
+  - Description: The number of pictures to be plotted and examined after training.
