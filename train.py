@@ -1,3 +1,5 @@
+import matplotlib
+import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -19,6 +21,8 @@ residual_models = ['fc_res', 'conv_res', 'lstm_res']
 mix_models = ['lstm_mix']
 
 def main(args):
+    seed = 42
+    torch.manual_seed(seed)
 
     # Create the model directory if does not exist
     if not os.path.exists(args.model_path):
@@ -33,15 +37,20 @@ def main(args):
     trainset = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, transform=transform)
     train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
     # Generate random indices to select a subset
-    indices = torch.randperm(len(trainset)).tolist()[:100]
+    indices = torch.randperm(len(trainset)).tolist()[:50]
     # Create a smaller dataset from the full dataset
     trainset_small = Subset(trainset, indices)
+
+
 
     """________________________________________
      work on a smaller dataset to test the model
     """
     # Create a DataLoader for the smaller dataset
     train_loader_small = DataLoader(trainset_small, batch_size=args.batch_size, shuffle=True, num_workers=2)
+
+    # show an image from the dataset
+    # import matplotlib.pyplot as plt
 
     # Load the model:
     model = models.setup(args)
@@ -133,6 +142,7 @@ def main(args):
                 current_losses.append(running_loss/args.log_step/num_patches)
                 running_loss = 0.0
 
+
             # SAVE:
             if (i + 1) % args.save_step == 0:
                 torch.save(model.state_dict(),
@@ -204,7 +214,8 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------------------------------------------------------
     parser.add_argument('--num_epochs', type=int, default=3,
                         help='number of iterations where the system sees all the data')
-    parser.add_argument('--learning_rate', type=float, default=0.001)
+    parser.add_argument('--learning_rate', type=float, default=0.001,
+                        help= 'default is ')
     parser.add_argument('--weight_decay', type=float, default=0)
     parser.add_argument('--momentum', type=float, default=0.9)
 

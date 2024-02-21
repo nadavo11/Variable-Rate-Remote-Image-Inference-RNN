@@ -20,9 +20,13 @@ class ConvolutionalEncoder(nn.Module):
         self.binary = BinaryLayer2()
 
     def forward(self, x):
+        # print(f'input size: {x.size()}')
         x = F.tanh(self.conv_1(x))  # 32x32@3 --> 15x15@64
+        # print(f'after conv1: {x.size()}')
         x = F.tanh(self.conv_2(x))  # 15x15@64 --> 13x13@256
+        # print(f'after conv2: {x.size()}')
         x = F.tanh(self.conv_3(x))  # 13x13@256 --> 6x6@512
+        # print(f'after conv3: {x.size()}')
         x = x.view(-1, 512*6*6)
         x = F.tanh(self.fc_1(x))    # (6*6*512) --> coded_size*8
         x = F.tanh(self.fc_2(x))    # coded_size*8 --> coded_size

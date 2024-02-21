@@ -1,5 +1,7 @@
 .idea/
 *.pyc
+*.png
+saved_models
 data/
 test_imgs/
 saved_models/
