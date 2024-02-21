@@ -20,7 +20,14 @@ oneway_models = ['fc', 'conv', 'lstm']
 residual_models = ['fc_res', 'conv_res', 'lstm_res']
 mix_models = ['lstm_mix']
 
+
 def main(args):
+    from rich.console import Console
+    from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
+    from rich.panel import Panel
+
+    console = Console()
+
     seed = 42
     torch.manual_seed(seed)
 
@@ -75,6 +82,7 @@ def main(args):
 
         running_loss = 0.0
         current_losses = []
+
         for i, data in enumerate(train_loader_small, 0):
 
             # Get the images
@@ -136,9 +144,20 @@ def main(args):
             # STATISTICS:
 
             if (i+1) % args.log_step == 0:
-                print('(%s) [%d, %5d] loss: %.3f' %
-                      (timeSince(start, ((epoch * num_steps + i + 1.0) / (args.num_epochs * num_steps))),
-                       epoch + 1, i + 1, running_loss / args.log_step / num_patches))
+                panel = Panel(f"[bold green]Step: {i + 1}/{num_steps}\n"
+                              f"[bold green]Epoch: {epoch+1}/{args.num_epochs}\n"
+                              f"[bold yellow]Loss: {running_loss / args.log_step / num_patches:.4f}\n"
+                              f"[bold cyan]Time: {timeSince(start, ((epoch * num_steps + i + 1.0) / (args.num_epochs * num_steps))):s}"
+                              ,
+                              title="[bold cyan]Training Progress",
+                              subtitle="[bold cyan]Detailed Information",
+                              expand=False,
+                              padding=(1, 8))
+                console.log(panel)
+
+                # print('(%s) [%d, %5d] loss: %.3f' %
+                #       (timeSince(start, ((epoch * num_steps + i + 1.0) / (args.num_epochs * num_steps))),
+                #        epoch + 1, i + 1, running_loss / args.log_step / num_patches))
                 current_losses.append(running_loss/args.log_step/num_patches)
                 running_loss = 0.0
 

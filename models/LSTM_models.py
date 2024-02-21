@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import *
 
-from models.binary_layers import BinaryLayer
+from models.binary_layers import BinaryLayer, BinaryLayer2
 
 
 class LSTMEncoder(nn.Module):
@@ -21,7 +21,7 @@ class LSTMEncoder(nn.Module):
         self.lstm1 = nn.LSTMCell(self.input_size, self.hidden_size)
         self.lstm2 = nn.LSTMCell(self.hidden_size, self.hidden_size)
         self.binaryFC = nn.Linear(self.hidden_size, self.coded_size)
-        self.binary = BinaryLayer()
+        self.binary = BinaryLayer2()
 
     def init_state(self):
         h_1_0 = Variable(torch.zeros(self.batch_size, self.hidden_size), requires_grad=False)
