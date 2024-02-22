@@ -26,7 +26,8 @@ class ConvolutionalEncoder(nn.Module):
         x = F.tanh(self.conv_2(x))  # 15x15@64 --> 13x13@256
         # print(f'after conv2: {x.size()}')
         x = F.tanh(self.conv_3(x))  # 13x13@256 --> 6x6@512
-        # print(f'after conv3: {x.size()}')
+        print(f'after conv3: {x.size()}')
+        s = x.size()
         x = x.view(-1, 512*6*6)
         x = F.tanh(self.fc_1(x))    # (6*6*512) --> coded_size*8
         x = F.tanh(self.fc_2(x))    # coded_size*8 --> coded_size

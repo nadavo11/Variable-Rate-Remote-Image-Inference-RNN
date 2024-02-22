@@ -178,7 +178,7 @@ def main(args):
         torch.save(model.state_dict(),
                    os.path.join(args.model_path,
                                 args.model + '-p%d_b%d-%d_%d.pkl' % (args.patch_size, args.coded_size, epoch + 1, i + 1)))
-    plt.plot(losses); plt.xlabel("loss"); plt.ylabel("epoch")
+    plt.figure(); plt.plot(losses); plt.xlabel("loss"); plt.ylabel("epoch"); plt.show()
     print('__TRAINING DONE=================================================')
 
 
@@ -197,7 +197,7 @@ def timeSince(since, percent):
     s = now - since
     es = s / percent
     rs = es - s
-    return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
+    return '%s (ETA: %s)' % (asMinutes(s), asMinutes(rs))
 
 
 def to_patches(x, patch_size):
