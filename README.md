@@ -94,6 +94,10 @@ Detailed explanation of each parameter available in `train.py`:
   - default: `5000`
   - Determines how often the model is saved to disk during training. Adjust based on your training duration and model complexity.
   Compression for low-resolution thumbnails images using RNN.
+- ``--from_pretrained``
+    - type: `int`
+  - default: `5000`
+  - Specify the path of a pretrained model to further train, note, you stiil have to fill in the other necessary model arguments, otherwise the loader can't get the model
 
 Original paper: Toderici et al., Google, ICLR 2016 
 

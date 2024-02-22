@@ -62,6 +62,11 @@ def main(args):
     # Load the model:
     model = models.setup(args)
 
+    if args.from_pretrained:
+        pretrained = args.from_pretrained
+        model.load_state_dict(torch.load(pretrained))
+
+
     # Define the LOSS and the OPTIMIZER
     criterion = nn.MSELoss()
     params = list(model.parameters())
@@ -150,7 +155,7 @@ def main(args):
                               f"[bold cyan]Time: {timeSince(start, ((epoch * num_steps + i + 1.0) / (args.num_epochs * num_steps))):s}"
                               ,
                               title="[bold cyan]Training Progress",
-                              subtitle="[bold cyan]Detailed Information",
+
                               expand=False,
                               padding=(1, 8))
                 console.log(panel)
@@ -172,7 +177,7 @@ def main(args):
         torch.save(model.state_dict(),
                    os.path.join(args.model_path,
                                 args.model + '-p%d_b%d-%d_%d.pkl' % (args.patch_size, args.coded_size, epoch + 1, i + 1)))
-
+    plt.plot(losses); plt.xlabel("loss"); plt.ylabel("epoch")
     print('__TRAINING DONE=================================================')
 
 
@@ -204,11 +209,11 @@ def to_patches(x, patch_size):
     return patches
 
 
-
+"""
 #=============================================================================
 # - PARAMETERS
 #=============================================================================
-
+"""
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
@@ -227,6 +232,8 @@ if __name__ == '__main__':
                         help='size for the encoded subdivision of the input image')
     parser.add_argument('--num_passes', type=int, default=16,
                         help='number of passes for recursive architectures')
+    parser.add_argument('--from_pretrained', type=str, default='',
+                        help='specify the path of a pretrained model to further train')
 
     # ==================================================================================================================
     # OPTIMIZATION
