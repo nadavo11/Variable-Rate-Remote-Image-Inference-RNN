@@ -148,7 +148,7 @@ def main(args):
                 running_loss += loss.data[0]
 
             # STATISTICS:
-#
+##
             if (i+1) % args.log_step == 0:
                 panel = Panel(f"[bold green]Step: {i + 1}/{num_steps}\n"
                               f"[bold green]Epoch: {epoch+1}/{args.num_epochs}\n"
