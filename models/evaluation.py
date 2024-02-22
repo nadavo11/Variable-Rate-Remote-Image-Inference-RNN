@@ -1,15 +1,10 @@
 import torch
-import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 from torch.autograd import Variable
 
 import os
 import argparse
-import scipy.misc
-import numpy as np
-
-from PIL import Image
 
 import models
 

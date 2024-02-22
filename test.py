@@ -1,10 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
 from torch.autograd import Variable
-
-import models
 
 conv_1 = nn.Conv2d(3, 64, 4, stride=2)
 conv_2 = nn.Conv2d(64, 256, 3, stride=1)

@@ -16,6 +16,7 @@ from torch.utils.data import Subset, DataLoader
 
 import models
 
+
 oneway_models = ['fc', 'conv', 'lstm']
 residual_models = ['fc_res', 'conv_res', 'lstm_res']
 mix_models = ['lstm_mix']
