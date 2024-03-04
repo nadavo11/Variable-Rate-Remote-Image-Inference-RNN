@@ -38,26 +38,71 @@ def main(args):
     model.load_state_dict(torch.load(path_to_model))
 
     print('Starting eval:::::::::::::::::')
+
+    # Iterate through the dataset batches
     for i in range(args.num_samples//args.batch_size):
         # fixed from dataiter.next() ❌❌
+
+        #load the data
         imgs, _ = next(dataiter)
         imsave(torchvision.utils.make_grid(imgs), 'prova_'+str(i))
 
-        # Patch the image:
+        # divide the images to patches:
         patches = to_patches(imgs, args.patch_size)
         r_patches = []  # Reconstructed Patches
+
+        # If the model is not a residual model, reset its state for a fresh start
         if args.residual is None:
             model.reset_state()
+
+        # Process each patch through the model
         for p in patches:
+
+            # If the model is a residual model, use the model's sampling method
             if args.residual:
                 outputs = model.sample(Variable(p))
+
+            # Otherwise, simply forward the patch through the model
             else:
                 outputs = model(Variable(p))
+            # Collect the model's output patches for reconstruction
             r_patches.append(outputs)
         # Transform the patches into the image
         outputs = reconstruct_patches(r_patches)
         imsave(torchvision.utils.make_grid(outputs), 'prova_'+str(i)+'_decoded')
 
+
+def evaluate(model, imgs =None, dataiter = None, num_samples =20,batch_size=4):
+    for i in range(num_samples//batch_size):
+        print(i)
+        #load the datasd
+        if not imgs:
+            imgs, _ = next(dataiter)
+        imsave(torchvision.utils.make_grid(imgs), 'prova_'+str(i))
+
+        # divide the images to patches:
+        patches = to_patches(imgs, args.patch_size)
+        r_patches = []  # Reconstructed Patches
+
+        # If the model is not a residual model, reset its state for a fresh start
+        if args.residual is None:
+            model.reset_state()
+
+        # Process each patch through the model
+        for p in patches:
+
+            # If the model is a residual model, use the model's sampling method
+            if args.residual:
+                outputs = model.sample(Variable(p))
+
+            # Otherwise, simply forward the patch through the model
+            else:
+                outputs = model(Variable(p))
+            # Collect the model's output patches for reconstruction
+            r_patches.append(outputs)
+        # Transform the patches into the image
+        outputs = reconstruct_patches(r_patches)
+        imsave(torchvision.utils.make_grid(outputs), 'prova_'+str(i)+'_decoded')
 
 #==============================================
 # - CUSTOM FUNCTIONS
@@ -70,16 +115,35 @@ def imsave(img, name):
 
 
 def to_patches(x, patch_size):
+    """
+    Splits an input tensor into square patches of a specified size.
+
+    :param x: (Tensor) The input tensor to be split into patches. Expected shape is (N, C, H, W).
+    :param patch_size:(int) The size of one side of the square patches to be extracted.
+    :return:patches - List[Tensor]: A list of the extracted patches, each of which is a tensor with shape (N, C, patch_size, patch_size).
+    """
+    # Calculate the number of patches along one dimension
     num_patches_x = 32//patch_size
+
     patches = []
+
+    # Iterate over each patch position in the input tensor
     for i in range(num_patches_x):
         for j in range(num_patches_x):
+
+            # Extract the patch
             patch = x[:, :, i*patch_size:(i+1)*patch_size, j*patch_size:(j+1)*patch_size]
+
+            # Ensure the patch is contiguous in memory and add it to the list
             patches.append(patch.contiguous())
     return patches
 
 
 def reconstruct_patches(patches):
+    """
+    :param patches:
+    :return:
+    """
     batch_size = patches[0].size(0)
     patch_size = patches[0].size(2)
     num_patches_x = 32//patch_size
@@ -146,3 +210,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args)
     main(args)
+
+#%%

@@ -14,13 +14,61 @@ import os
 import numpy as np
 from torch.utils.data import Subset, DataLoader
 
-import models
+from IPython.display import display, clear_output
+import threading
+import time
 
+import models
 
 oneway_models = ['fc', 'conv', 'lstm']
 residual_models = ['fc_res', 'conv_res', 'lstm_res']
 mix_models = ['lstm_mix']
 
+
+def init_loss_plot():
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    line, = ax.plot([], [], 'r-', label='Training Loss')  # Initialize an empty line
+    ax.set_xlabel('Batch')
+    ax.set_ylabel('Loss')
+    ax.set_title('Training Loss')
+    ax.legend()
+    return ax,line
+
+def plot_losses(losses,ax,line):
+    ax.set_xlim(0, len(losses))  # Set the x-axis limits
+    ax.set_ylim(min(losses), max(losses) + 0.1 * (max(losses) - min(losses)))  # Adjust the y-axis limits dynamically
+
+    line.set_data(range(len(losses)), losses)  # Update the line data
+    plt.draw()
+    plt.pause(0.1)  # Pause to update the plot
+
+
+def evaluate(model, data_loader, criterion):
+    """
+
+    """
+    model.eval()  # Set the model to evaluation mode
+    total_loss = 0.0
+    total_samples = 0
+
+    with torch.no_grad():  # Disable gradient computation
+        for data in data_loader:
+            imgs = data[0]
+            # Depending on your model, you might need targets here as well
+            patches = to_patches(imgs, args.patch_size)
+
+            # Assuming a similar processing as in training but without backpropagation
+            for patch in patches:
+                # Transform the tensor into Variable, if necessary
+                v_patch = Variable(patch)
+                reconstructed_patches = model(v_patch)
+                loss = criterion(reconstructed_patches, v_patch)  # Adapt based on your loss calculation
+                total_loss += loss.item() * v_patch.size(0)
+                total_samples += v_patch.size(0)
+
+    average_loss = total_loss / total_samples
+    return average_loss
 
 def main(args):
     from rich.console import Console
@@ -84,16 +132,18 @@ def main(args):
     # Divide the input 32x32 images into num_patches patch_sizexpatch_size patchs
     num_patches = (32//args.patch_size)**2
 
+    current_losses = []
+    ax, line = init_loss_plot()
+
     for epoch in range(args.num_epochs):
 
         running_loss = 0.0
-        current_losses = []
+
 
         for i, data in enumerate(train_loader_small, 0):
 
             # Get the images
             imgs = data[0]
-
             # Transform into patches
             patches = to_patches(imgs, args.patch_size)
             # TODO: Do this thing more polite!! :S
@@ -129,7 +179,7 @@ def main(args):
                     loss = sum(losses)
                     loss.backward()
                     optimizer.step()
-                    running_loss += loss.data[0]
+                    running_loss += loss.data
 
             else:
                 model.reset_state()
@@ -165,6 +215,7 @@ def main(args):
                 #       (timeSince(start, ((epoch * num_steps + i + 1.0) / (args.num_epochs * num_steps))),
                 #        epoch + 1, i + 1, running_loss / args.log_step / num_patches))
                 current_losses.append(running_loss/args.log_step/num_patches)
+                plot_losses(current_losses, ax, line)
                 running_loss = 0.0
 
 
@@ -174,11 +225,13 @@ def main(args):
                            os.path.join(args.model_path, args.model+'-p%d_b%d-%d_%d.pkl' %
                                         (args.patch_size, args.coded_size, epoch + 1, i + 1)))
 
+
         total_losses.append(current_losses)
         torch.save(model.state_dict(),
                    os.path.join(args.model_path,
                                 args.model + '-p%d_b%d-%d_%d.pkl' % (args.patch_size, args.coded_size, epoch + 1, i + 1)))
-    plt.figure(); plt.plot(losses); plt.xlabel("loss"); plt.ylabel("epoch"); plt.show()
+    plt.plot(current_losses)
+    plt.show()
     print('__TRAINING DONE=================================================')
 
 
@@ -261,3 +314,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args)
     main(args)
+
+#%%
