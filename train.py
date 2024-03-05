@@ -14,7 +14,7 @@ import os
 import numpy as np
 from torch.utils.data import Subset, DataLoader
 
-from IPython.display import display, clear_output
+#from IPython.display import display, clear_output
 import threading
 import time
 
@@ -24,7 +24,24 @@ oneway_models = ['fc', 'conv', 'lstm']
 residual_models = ['fc_res', 'conv_res', 'lstm_res']
 mix_models = ['lstm_mix']
 
+def compare_reconstructed_patch(target_tensor,reconstructed_patches):
+    # Create a figure and a set of subplots
+    fig, axs = plt.subplots(1, 2, figsize=(10, 5))  # 1 row, 2 columns, and optionally set a figure size
 
+    # Plot target patch
+    target_img = target_tensor[0].permute(1, 2, 0).detach().numpy()  # Convert the first patch to numpy array
+    axs[0].imshow(target_img)
+    axs[0].set_title("Target Patch")
+    axs[0].axis('off')  # Optionally remove the axis
+
+    # Plot reconstructed patch
+    reconstructed_img = reconstructed_patches[0].permute(1, 2,
+                                                         0).detach().numpy()  # Convert the first reconstructed patch to numpy array
+    axs[1].imshow(reconstructed_img)
+    axs[1].set_title("Reconstructed")
+    axs[1].axis('off')  # Optionally remove the axis
+
+    plt.show()
 def init_loss_plot():
 
     fig, ax = plt.subplots(figsize=(10, 5))
@@ -37,7 +54,7 @@ def init_loss_plot():
 
 def plot_losses(losses,ax,line):
     ax.set_xlim(0, len(losses))  # Set the x-axis limits
-    ax.set_ylim(min(losses), max(losses) + 0.1 * (max(losses) - min(losses)))  # Adjust the y-axis limits dynamically
+    ax.set_ylim(min(losses), max(losses) + 0.1 * (max(losses) - min(losses))+1e-6)  # Adjust the y-axis limits dynamically
 
     line.set_data(range(len(losses)), losses)  # Update the line data
     plt.draw()
@@ -93,7 +110,7 @@ def main(args):
     trainset = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, transform=transform)
     train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
     # Generate random indices to select a subset
-    indices = torch.randperm(len(trainset)).tolist()[:50]
+    indices = torch.randperm(len(trainset)).tolist()[:10000]
     # Create a smaller dataset from the full dataset
     trainset_small = Subset(trainset, indices)
 
@@ -126,7 +143,7 @@ def main(args):
     # ::::::::::::::::::::::::::::::::
 
     # change for trainloader size:
-    num_steps = len(train_loader_small)
+    num_steps = len(train_loader)
     start = time.time()
     total_losses = []
     # Divide the input 32x32 images into num_patches patch_sizexpatch_size patchs
@@ -140,12 +157,13 @@ def main(args):
         running_loss = 0.0
 
 
-        for i, data in enumerate(train_loader_small, 0):
+        for i, data in enumerate(train_loader, 0):
 
             # Get the images
             imgs = data[0]
             # Transform into patches
             patches = to_patches(imgs, args.patch_size)
+
             # TODO: Do this thing more polite!! :S
             if args.model in oneway_models:
                 for patch in patches:
@@ -156,7 +174,7 @@ def main(args):
                     # Set gradients to Zero
                     optimizer.zero_grad()
                     reconstructed_patches = model(v_patch)
-                    loss = criterion(reconstructed_patches, v_patch)
+                    loss = criterion(reconstructed_patches, target_tensor)
                     loss.backward()
                     optimizer.step()
                     running_loss += loss.item()
@@ -165,7 +183,8 @@ def main(args):
                 for patch in patches:
                     # Transform the tensor into Variable
                     v_patch = Variable(patch)
-                    target_tensor = Variable(torch.zeros(v_patch.size()), requires_grad=False)
+                    # target_tensor = Variable(torch.zeros(v_patch.size()), requires_grad=False) #⁉️⁉️
+                    target_tensor = Variable(patch, requires_grad=True)
                     losses = []
                     # Set gradients to Zero
                     optimizer.zero_grad()
@@ -173,9 +192,16 @@ def main(args):
                     for p in range(args.num_passes):
                         # Forward + Backward + Optimize
                         reconstructed_patches = model(v_patch, p)
-                        losses.append(criterion(reconstructed_patches, target_tensor))
+
+                        # losses.append(criterion(reconstructed_patches, target_tensor)) #⁉️⁉️
+                        losses.append(criterion(reconstructed_patches, target_tensor) / args.num_passes)
 
                         v_patch = reconstructed_patches
+
+                    reconstructed_image_patch = model.sample(input_patch=patch) # DISPLAY IMAGE
+
+                # compare_reconstructed_patch(patch, reconstructed_image_patch)
+
                     loss = sum(losses)
                     loss.backward()
                     optimizer.step()
@@ -200,9 +226,16 @@ def main(args):
             # STATISTICS:
 ##
             if (i+1) % args.log_step == 0:
+
+                loss_value = running_loss / args.log_step / num_patches
+                if loss_value < 1e-5:
+                    loss_str = f"{loss_value:.1e}"  # Scientific notation for very small numbers
+                else:
+                    loss_str = f"{loss_value:.4f}"  # Fixed-point notation for larger numbers
+
                 panel = Panel(f"[bold green]Step: {i + 1}/{num_steps}\n"
                               f"[bold green]Epoch: {epoch+1}/{args.num_epochs}\n"
-                              f"[bold yellow]Loss: {running_loss / args.log_step / num_patches:.4f}\n"
+                              f"[bold yellow]Loss: {loss_str}\n"
                               f"[bold cyan]Time: {timeSince(start, ((epoch * num_steps + i + 1.0) / (args.num_epochs * num_steps))):s}"
                               ,
                               title="[bold cyan]Training Progress",
@@ -211,9 +244,6 @@ def main(args):
                               padding=(1, 8))
                 console.log(panel)
 
-                # print('(%s) [%d, %5d] loss: %.3f' %
-                #       (timeSince(start, ((epoch * num_steps + i + 1.0) / (args.num_epochs * num_steps))),
-                #        epoch + 1, i + 1, running_loss / args.log_step / num_patches))
                 current_losses.append(running_loss/args.log_step/num_patches)
                 plot_losses(current_losses, ax, line)
                 running_loss = 0.0

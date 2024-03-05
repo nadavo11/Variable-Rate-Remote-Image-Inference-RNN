@@ -111,6 +111,7 @@ def evaluate(model, imgs =None, dataiter = None, num_samples =20,batch_size=4):
 def imsave(img, name):
     img = img / 2 + 0.5     # unnormalize
     saving_path = os.path.join(args.output_path, name+'.png')
+    print(f"saving to {saving_path }")
     torchvision.utils.save_image(img, saving_path)
 
 

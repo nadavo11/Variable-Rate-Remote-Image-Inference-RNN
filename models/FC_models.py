@@ -19,7 +19,8 @@ class EncoderFC(nn.Module):
         self.fc2 = nn.Linear(512, 512)
         self.fc3 = nn.Linear(512, 512)
         self.w_bin = nn.Linear(512, self.coded_size)
-        self.binary = BinaryLayer2() # not implemented prorperly
+        self.binary = BinaryLayer2()
+
 
     def forward(self, x):
         """
