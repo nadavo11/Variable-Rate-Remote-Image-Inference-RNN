@@ -127,7 +127,10 @@ class Residual2CoreFC(nn.Module):
         return residual_patch
 
     def sample(self, input_patch):
-
+        """
+        :param input_patch: input patch
+        :return: reconstructed patch
+        """
         outputs = []
         for pass_num in range(self.num_passes):
             out_bits = self.encoders[pass_num](input_patch)
