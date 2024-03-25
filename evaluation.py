@@ -70,6 +70,7 @@ def main(args):
         # Transform the patches into the image
         outputs = reconstruct_patches(r_patches)
         imsave(torchvision.utils.make_grid(outputs), 'prova_'+str(i)+'_decoded')
+        print(f'saved to {args.output_path}!')
 
 
 def evaluate(model, imgs =None, dataiter = None, num_samples =20,batch_size=4):
@@ -103,6 +104,7 @@ def evaluate(model, imgs =None, dataiter = None, num_samples =20,batch_size=4):
         # Transform the patches into the image
         outputs = reconstruct_patches(r_patches)
         imsave(torchvision.utils.make_grid(outputs), 'prova_'+str(i)+'_decoded')
+
 
 #==============================================
 # - CUSTOM FUNCTIONS

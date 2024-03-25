@@ -70,11 +70,13 @@ def evaluate(model, data_loader, criterion):
     average_loss = total_loss / total_samples
     return average_loss
 
+
 def main(args):
     from rich.console import Console
     from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
     from rich.panel import Panel
 
+    # Initialize rich console for enhanced logging
     console = Console()
 
     seed = 42
@@ -97,7 +99,9 @@ def main(args):
     # Create a smaller dataset from the full dataset
     trainset_small = Subset(trainset, indices)
 
-
+    # preparing the val dataloader
+    valset = torchvision.datasets.CIFAR100(root='./data', train=False, download=True, transform=transform)
+    val_loader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size, shuffle=False, num_workers=2)
 
     """________________________________________
      work on a smaller dataset to test the model
@@ -105,25 +109,26 @@ def main(args):
     # Create a DataLoader for the smaller dataset
     train_loader_small = DataLoader(trainset_small, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
-    # show an image from the dataset
-    # import matplotlib.pyplot as plt
-
-    # Load the model:
+    # setup the model:
     model = models.setup(args)
-
+    # load a pretrained model
     if args.from_pretrained:
         pretrained = args.from_pretrained
         model.load_state_dict(torch.load(pretrained))
-
 
     # Define the LOSS and the OPTIMIZER
     criterion = nn.MSELoss()
     params = list(model.parameters())
     optimizer = optim.Adam(params, lr=args.learning_rate, weight_decay=args.weight_decay)
 
-    # ::::::::::::::::::::::::::::::::
-    #   TRAIN----------------------
-    # ::::::::::::::::::::::::::::::::
+    """_____________________________________________________________________________
+                                                                                    *
+                                                                                    *
+                                  TRAIN LOOP                                        *
+                                                                                    *
+                                                                                    *
+    ________________________________________________________________________________*
+    """
 
     # change for trainloader size:
     num_steps = len(train_loader_small)
@@ -167,6 +172,7 @@ def main(args):
                     v_patch = Variable(patch)
                     target_tensor = Variable(torch.zeros(v_patch.size()), requires_grad=False)
                     losses = []
+
                     # Set gradients to Zero
                     optimizer.zero_grad()
 
@@ -200,9 +206,13 @@ def main(args):
             # STATISTICS:
 ##
             if (i+1) % args.log_step == 0:
+                val_loss = evaluate(model, val_loader, criterion)
+
+
                 panel = Panel(f"[bold green]Step: {i + 1}/{num_steps}\n"
                               f"[bold green]Epoch: {epoch+1}/{args.num_epochs}\n"
-                              f"[bold yellow]Loss: {running_loss / args.log_step / num_patches:.4f}\n"
+                              f"[bold yellow]train Loss: {running_loss / args.log_step / num_patches:.4f}\n"
+                              f"[bold yellow]val   Loss: {val_loss / args.log_step / num_patches:.4f}\n"
                               f"[bold cyan]Time: {timeSince(start, ((epoch * num_steps + i + 1.0) / (args.num_epochs * num_steps))):s}"
                               ,
                               title="[bold cyan]Training Progress",
@@ -217,6 +227,8 @@ def main(args):
                 current_losses.append(running_loss/args.log_step/num_patches)
                 plot_losses(current_losses, ax, line)
                 running_loss = 0.0
+
+
 
 
             # SAVE:
