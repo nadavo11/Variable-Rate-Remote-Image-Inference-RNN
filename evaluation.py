@@ -2,10 +2,10 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 from torch.autograd import Variable
-
+import matplotlib.pyplot as plt
 import os
 import argparse
-
+import numpy as np
 import models
 
 
@@ -70,6 +70,7 @@ def main(args):
         # Transform the patches into the image
         outputs = reconstruct_patches(r_patches)
         imsave(torchvision.utils.make_grid(outputs), 'prova_'+str(i)+'_decoded')
+        imshow(torchvision.utils.make_grid(outputs),"decoded")
         print(f'saved to {args.output_path}!')
 
 
@@ -116,6 +117,12 @@ def imsave(img, name):
     print(f"saving to {saving_path }")
     torchvision.utils.save_image(img, saving_path)
 
+def imshow(img, name):
+    img = img / 2 + 0.5     # unnormalize
+    img = np.transpose(img,(1,2,0))
+    plt.figure()
+    plt.imshow(img)
+    plt.show()
 
 def to_patches(x, patch_size):
     """
